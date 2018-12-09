@@ -10,19 +10,17 @@ ENV DOCKER_HOST tcp://0.0.0.0:2375
 RUN apk --update --no-cache add \
     curl \
     bash \
-    openjdk8 \
+    openjdk8-jre-base \
     sudo \
     && rm -rf /var/cache/apk/*
 
-# Add jenkins user
+# Add jenkins user and allow to run docker as root
 RUN adduser -D -h $JENKINS_HOME -s /bin/sh jenkins jenkins \
-    && chmod a+rwx $JENKINS_HOME 
-
-# Allow jenkins user to run dockerd as root
-RUN echo "jenkins ALL=(ALL) NOPASSWD: /usr/local/bin/dockerd" > /etc/sudoers.d/00jenkins && chmod 440 /etc/sudoers.d/00jenkins && chmod 440 /etc/sudoers.d/00jenkins
-
-# Allow jenkins user to run docker as root
-RUN echo "jenkins ALL=(ALL) NOPASSWD: /usr/local/bin/docker" > /etc/sudoers.d/01jenkins && chmod 440 /etc/sudoers.d/01jenkins && chmod 440 /etc/sudoers.d/01jenkins
+    && chmod a+rwx $JENKINS_HOME \
+    && echo "jenkins ALL=(ALL) NOPASSWD: /usr/local/bin/dockerd" > /etc/sudoers.d/00jenkins \
+    && chmod 440 /etc/sudoers.d/00jenkins \
+    && echo "jenkins ALL=(ALL) NOPASSWD: /usr/local/bin/docker" > /etc/sudoers.d/01jenkins \
+    && chmod 440 /etc/sudoers.d/01jenkins
 
 # Install Jenkins Remoting agent
 RUN curl --create-dirs -sSLo /usr/share/jenkins/slave.jar http://repo.jenkins-ci.org/public/org/jenkins-ci/main/remoting/$JENKINS_REMOTING_VERSION/remoting-$JENKINS_REMOTING_VERSION.jar \
@@ -35,8 +33,8 @@ COPY slave-entrypoint /usr/local/bin/slave-entrypoint
 
 # Make slave-entrypoint executable
 USER root
-RUN chmod +x /usr/local/bin/slave-entrypoint
-RUN chown root:jenkins /usr/local/bin/docker
+RUN chmod +x /usr/local/bin/slave-entrypoint \
+  && chown root:jenkins /usr/local/bin/docker
 
 # Init
 USER jenkins
