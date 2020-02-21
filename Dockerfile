@@ -1,5 +1,4 @@
 FROM docker:stable-dind
-MAINTAINER jonpraw <jonpraw@aol.com>
 
 # Set environment variables
 ENV JENKINS_HOME /home/jenkins
